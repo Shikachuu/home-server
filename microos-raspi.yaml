@@ -8,6 +8,10 @@ passwd:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ9B6zMB/ycG9cMfWtwIT/9mWaNGv7nu+h5nrHJ4drkl shika@pop-os
 systemd:
   units:
+    - name: sshd.service
+      enabled: true
+    - name: rebootmgr.service
+      enabled: true
     - name: blocky.service
       enabled: true
       contents: |
@@ -67,24 +71,22 @@ storage:
             path: /metrics
     - path: /etc/hostname
       mode: 0644
+      overwrite: true
       contents:
         inline: raspi3b
     - path: /etc/ssh/sshd_config.d/20-enable-passwords.conf
       mode: 0644
       contents:
         inline: |
-          # Fedora CoreOS disables SSH password login by default.
+          # MicroOS disables SSH password login by default.
           # Enable it.
           # This file must sort before 40-disable-passwords.conf.
           PasswordAuthentication yes
-    - path: /etc/zincati/config.d/55-updates-strategy.toml
+    - path: /etc/rebootmgr.conf
+      overwrite: true
       contents:
         inline: |
-          [identity]
-          rollout_wariness = 0.01
-          [updates]
-          strategy = "periodic"
-          [[updates.periodic.window]]
-          days = [ "Mon" ]
-          start_time = "03:00"
-          length_minutes = 30
+          [rebootmgr]
+          window-start=02:30
+          window-duration=1h
+          strategy=maint-window
