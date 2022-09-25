@@ -1,0 +1,33 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: prometheus
+  namespace: default
+spec:
+  repo: https://prometheus-community.github.io/helm-charts
+  chart: prometheus
+  targetNamespace: default
+  valuesContent: |-
+    serviceAccounts:
+      nodeExporter:
+        create: false
+    kubeStateMetrics:
+      enabled: false
+    nodeExporter:
+      enabled: false
+    pushgateway:
+      enabled: true
+      ingress:
+        enabled: true
+        hosts:
+          - push.monitoring
+          - push.monitoring.lan
+          - push.monitoring.local
+    server:
+      retention: "7d"
+      ingress:
+        enabled: true
+        hosts:
+          - prom.monitoring
+          - prom.monitoring.lan
+          - prom.monitoring.local
