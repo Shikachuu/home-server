@@ -15,7 +15,7 @@ stages:
           - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ9B6zMB/ycG9cMfWtwIT/9mWaNGv7nu+h5nrHJ4drkl shika@pop-os"
     - name: "Create DNS server config"
       commands:
-        - "wget https://github.com/0xERR0R/blocky/releases/download/v0.20/blocky_0.20_Linux_arm64.tar.gz -q -O - | tar -xzvf - -O blocky > /usr/bin/blocky"
+        - "wget https://github.com/0xERR0R/blocky/releases/download/v0.20/blocky_0.20_Linux_arm64.tar.gz -q -O - | tar -xzvf - -O blocky > /usr/local/blocky"
       files:
         - path: /etc/blocky-config.yaml
           content: |
@@ -62,7 +62,7 @@ stages:
                 need net
             }
 
-            command="/usr/bin/blocky"
+            command="/usr/local/blocky"
             command_args="--config /etc/blocky-config.yaml"
             command_user="c3os:c3os"
             pidfile="/run/${RC_SVCNAME}/pid"
