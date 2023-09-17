@@ -1,0 +1,72 @@
+apiVersion: v1
+data:
+  password: U3VwZXJTZWNyZXQxMQ==
+kind: Secret
+metadata:
+  name: wireguard
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wg-easy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wg-easy
+  template:
+    metadata:
+      labels:
+        app: wg-easy
+    spec:
+      restartPolicy: Always
+      initContainers:
+        - name: init
+          image: docker.io/busybox:1.36.1
+          command:
+            - sh
+            - -c
+            - sysctl -w net.ipv4.ip_forward=1 && sysctl -w net.ipv4.conf.all.forwarding=1
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
+      containers:
+        - name: wg-easy
+          image: docker.io/weejewel/wg-easy:7
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
+          volumeMounts:
+            - name: wireguard
+              mountPath: /etc/wireguard
+          env:
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wireguard
+                  key: password
+            - name: WG_HOST
+              value: picloud.hu
+            - name: WG_DEFAULT_DNS
+              value: 192.168.1.1
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 51820
+              protocol: UDP
+              hostPort: 51820
+            - containerPort: 51821
+              protocol: TCP
+              hostPort: 51821
+      volumes:
+        - name: wireguard
+          hostPath:
+            path: /etc/wireguard
+            type: Directory

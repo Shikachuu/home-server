@@ -53,6 +53,7 @@ spec:
       labels:
         app: blocky
     spec:
+      restartPolicy: Always
       containers:
       - name: blocky
         image: docker.io/spx01/blocky:v0.21
