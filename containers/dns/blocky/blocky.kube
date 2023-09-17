@@ -1,0 +1,10 @@
+[Unit]
+Description=Blocky k8s deployment
+Before=local-fs.target
+
+[Kube]
+Yaml=/opt/containers/blocky-deployment.yaml
+
+[Install]
+# Start by default on boot
+WantedBy=multi-user.target default.target

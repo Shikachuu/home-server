@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blocky-config
+data:
+  config.yml: |
+    upstream:
+      default:
+        - tcp-tls:dot.libredns.gr:853
+        - https://doh.libredns.gr/dns-query
+        - https://fi.doh.dns.snopyta.org/dns-query
+        - tcp-tls:fi.dot.dns.snopyta.org
+    blocking:
+      blackLists:
+        ads:
+          - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+          - https://dbl.oisd.nl
+      clientGroupsBlock:
+        default:
+          - ads
+    customDNS:
+      rewrite:
+        home: local
+        lan: local
+      mapping:
+        openwrt.local: 192.168.1.1
+        picloud.local: 192.168.1.10
+        dns.local: 192.168.1.20
+    ports:
+      dns: 53
+      http: 4000
+    log:
+      level: error
+      format: json
+      privacy: true
+    prometheus:
+      enable: true
+      path: /metrics
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blocky-deployment
+  labels:
+    app: blocky
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blocky
+  template:
+    metadata:
+      labels:
+        app: blocky
+    spec:
+      containers:
+      - name: blocky
+        image: docker.io/spx01/blocky:v0.21
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1G
+        volumeMounts:
+          - name: blocky-config
+            mountPath: /app/config.yml
+        ports:
+        - containerPort: 4000
+        - protocol: UDP
+          hostPort: 5353
+          containerPort: 53
+        - protocol: TCP
+          hostPort: 5353
+          containerPort: 53
+      volumes:
+        - name: blocky-config
+          configMap:
+            name: blocky-config
